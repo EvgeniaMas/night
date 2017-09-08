@@ -14,9 +14,8 @@ router.get('/', function (req, res, next) {
     res.render('index', {
       title: 'Nightlife Coordination App',
       articles: articles,
-      location: item,
-      lat: -23.54312,
-      long: -46.642748
+      location: item
+     
     });
   });
 });
@@ -59,11 +58,13 @@ router.post('/nearme', function (req, res, next) {
 
         res.render('locations', {
             title: 'Locations',
-            location: stores,
-            lat: -23.54312,
-            long: -46.642748
+            location: stores
+           
         });
     });
+
+
+
 });
 
 

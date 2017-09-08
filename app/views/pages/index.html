@@ -17,7 +17,11 @@
 <div class="section">
     <div class="container">
         <br><br>
-        
+       <!--  <div id="store-list" class="collection">
+                    {% for item in location %}
+                    <a href="#" class="pan-to-marker collection-item" data-marker-index="{{loop.index }}">{{item.title}}</a>
+                    {% endfor %}
+                </div> -->
         <div class="row">
             
             <div class="col s12">
@@ -26,55 +30,79 @@
                         <!-- Map -->
                         
                         <h5 class="grey-text center">
-                            Find a bar near by you <br> (enter your location or use current location showed on the map)
+                            Find a bar near by you <br> (enter your location or use current coordinates)
                         </h5>
+
+
                         <br>
-                        <div class="input-field col s5">
-                            <input placeholder="Insert Longitude" name="longitude" id="longitude" type="text" class="validate" value="{{long}}">
-                            <label for="longitude">Longitude</label>
-                        </div>
-                        <div class="input-field col s5">
-                            <input placeholder="Insert latitude" name="latitude" id="latitude" type="text" class="validate" value="{{lat}}">
-
-
-
-                            <label for="latitude">Latitude</label>
-                        </div>
-                        <div class="input-field col s2">
-                              <select class="browser-default" name="distance" id="distance">
-                                <option value="" disabled selected>Distance</option>
-                                <option value="2">2 Km</option>
-                                <option value="3">3 km</option>
-                                <option value="9">9 km</option>
-                              </select>
-                        </div>
+            <div class="row">
+                     <div class="input-field col s5">   
+                        <p>Current longitude </p>
+                        <textarea class="input-field" name="longitude" id="longitude" type="text" rows="5" cols="1" >
+                        </textarea>
                     </div>
-                    <div class="row">
-                       <!--  <button class="btn waves-effect waves-light" type="submit" name="action">Submit</button> -->
 
-                       <a class="btn waves-effect waves-light" href="https://maps.googleapis.com/maps/api/place/radarsearch/json?location=51.503186,-0.126446&radius=5000&type=bar&key=AIzaSyBOViKxTR6rGY4jlrrJoxGFDQcT17lrei0"></a>
+                    <div class="input-field col s5">
+                        <p>Current latitude </p>
+                        <textarea  class="input-field" name="latitude" id="latitude" type="text" rows="5" cols="1" ></textarea>
+                           
                     </div>
+
+                    </div>
+                    <div class="col s12">                         
+                       <button class=" find_button btn waves-effect waves-light" onclick="findBars()" type="submit" name="action">Find </button>
+                    </div>
+
+                    <div class="input-field col s12">
+                        <p id="mistake"></p>
+                                                   
+                    </div>
+
+                    <div id="bars" class="col s12">
+
+
+                    </div>
+            
                 </form>
+
+
+                 <!-- <button class="btn waves-effect waves-light" onclick="findCurrenPosition() "type="submit" name="action">Get Position</button> -->
+
+                  <!-- <button class="btn waves-effect waves-light" onclick="getJSON();" type="submit" name="action">Get your coordinates</button> -->
+                   
                 <br>
+
             </div>
         </div>
     </div>
 </div>
 
+<script> 
 
+function getCurrentPosition() {
 
+    // Check boreswer/navigator support
+    if (navigator.geolocation) {
+        var options = {
+            enableHighAccuracy : true,
+            timeout : Infinity,
+            maximumAge : 0
+        };
 
+        navigator.geolocation.watchPosition(getUserPosition, trackError, options);
 
+    } else {
+        alert('Ops; Geolocation is not supported');
+    }
+    // Get user position and place a icon on map
+    function getUserPosition(position) {
+        // Check longitude and latitude
+        console.log(position.coords.latitude);
+        console.log(position.coords.longitude);
 
-
-
-
-
-<!-- <script type="text/javascript">
-    var loadMap = function() {
-        // Center map with current lat and long (Simulated with fixed point for this example)
-        var googlePos = new google.maps.LatLng({{ lat }} , {{ long }});
-        // Setup map options
+        // Create the user' coordinates
+        var googlePos = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+       
         var mapOptions = {
             zoom : 12,
             center : googlePos,
@@ -83,77 +111,109 @@
 
         // Set a variable to get the HTML div
         var mapObj = document.getElementById('map');
+        // Create the map and passing: map div and map options
         var googleMap = new google.maps.Map(mapObj, mapOptions);
-        // Create markers array to hold all markers on map
-        var markers = [];
+        // Setup a marker on map with user' location
+        var markerOption = {
+            map : googleMap,
+            position : googlePos,
+            animation : google.maps.Animation.DROP
+        };
 
-        // Using the Swig loop to get all data from location variable
-
-        {% for item in location %}
-            // Setup a lat long object
-            var latLng = new google.maps.LatLng({{ item.coordinates[1] }}, {{ item.coordinates[0] }});
-            // Create a marker
-            var marker = new google.maps.Marker({
-                map : googleMap,
-                position: latLng,
-                animation : google.maps.Animation.DROP
-            });
-
-            markers.push(marker);
-
-            // Setup the info window
-            var infowindow = new google.maps.InfoWindow();
-
-            // Add an event listener to click on each marker and show an info window
-            google.maps.event.addListener(marker, 'click', function () {
-                // using the tittle from the Swig looping
-                infowindow.setContent('<p>' + " {{ item.title }} " + '</p>');
-                infowindow.open(googleMap, this);
-            });
-
-        {% endfor %}
-
-        // get all the pan-to-marker class
-        var els = document.querySelectorAll(".pan-to-marker");
-        // looping over all list elements
-        for (var i = 0, len = els.length; i < len; i++) {
-
-            els[i].addEventListener("click", function(e){
-                e.preventDefault();
-
-                // Use -1 for index because loop.index from swig starts on 1
-                var attr = this.getAttribute('data-marker-index') -1;
-                // get longitude and latitude of the marker
-                var latitude = markers[attr].getPosition().lat();
-                var longitude = markers[attr].getPosition().lng();
-
-                console.log(latitude, longitude );
-                // Center map and apply zoom
-                googleMap.setCenter({lat: latitude, lng: longitude});
-                googleMap.setZoom(18);
-
-            });
+        // Create a instance with marker on map
+        var googleMarker = new google.maps.Marker(markerOption);
+        // Get the user's complete address information using the Geocoder Google API
+        var geocoder = new google.maps.Geocoder();
+        geocoder.geocode({
+            'latLng' : googlePos
+        }, function(results, status) {
+            if (status == google.maps.GeocoderStatus.OK) {
+                if (results[1]) {
+                    var popOpts = {
+                        content : results[1].formatted_address,
+                        position : googlePos
+                    };
+                    // Setup an info window with user information
+                    var popup = new google.maps.InfoWindow(popOpts);
+                    google.maps.event.addListener(googleMarker, 'click', function() {
+                        popup.open(googleMap);
+                    });
+                } else {
+                    alert('No results found');
+                }
+            } else {
+                alert('Uhh, failed: ' + status);
+            }
+        });
+    }
+    // Setup a error function
+    function trackError(error) {
+        var err = document.getElementById('map');
+        switch(error.code) {
+            case error.PERMISSION_DENIED:
+            err.innerHTML = "User denied Geolocation.";
+            break;
+            case error.POSITION_UNAVAILABLE:
+            err.innerHTML = "Information is unavailable. Check if geolocation is not switched off";
+            break;
+            case error.TIMEOUT:
+            err.innerHTML = "Location timed out.";
+            break;
+            case error.UNKNOWN_ERROR:
+            err.innerHTML = "An unknown error.";
+            break;
         }
+    }
+}
 
-    };
-    // load the map function
-    window.onload = loadMap;
-</script> -->
+getCurrentPosition();       
 
-
-
-
-
-
-
-
-
-
-
-
+function getCoord() { 
+    $.getJSON('http://ip-api.com/json', function(data) {
+                // console.log(data);
+                document.getElementById('latitude').innerHTML = (Number(data.lat));
+                // alert(typeof(data.lon));
+                document.getElementById('longitude').innerHTML = (Number(data.lon));
+                
+        });
+    }
+getCoord();
 
 
 
-<!-- Tracking current user position -->
-<script src="/js/getCurrentPosition.js"></script>
+
+
+function findBars(e) {
+  var curentLatitude = document.getElementById('latitude').innerHTML;
+  var curentLongitude = document.getElementById('longitude').innerHTML;
+
+  if (curentLatitude== 'undefined' || curentLongitude == 'undefined') {
+    document.getElementById('mistake').innerHTML = "Enter proper coordinates"
+  }
+
+  else {
+    var url2 = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + encodeURIComponent(curentLatitude) +',' + encodeURIComponent(curentLongitude) + '&radius=5000&type=cafe&type=restaurant&type=point_of_interes&type=food&keyword=cruise&key=AIzaSyBOViKxTR6rGY4jlrrJoxGFDQcT17lrei0';
+    var url = 'https://maps.googleapis.com/maps/api/place/radarsearch/json?location=51.503186,-0.126446&radius=5000&type=museum&key=AIzaSyBOViKxTR6rGY4jlrrJoxGFDQcT17lrei0';
+    console.log(url);
+
+    
+
+// $.ajax({
+//     url: url,
+//     type: 'GET',
+//     dataType: 'json',
+//     headers: {"Access-Control-Allow-Origin: *"},
+
+//     // crossDomain: true,
+//     success: function(data){
+//         var obj = data.response[0];
+//         $('#bars').html("Hello< I got it!");
+//     }    
+// });
+
+    }    
+}
+       
+
+</script>
 {% endblock %}

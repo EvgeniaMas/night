@@ -2,6 +2,8 @@ var express = require('express'),
   config = require('./config/config'),
   glob = require('glob'),
   mongoose = require('mongoose');
+  cors = require('cors');
+  
 mongoose.Promise = global.Promise;
 mongoose.connection.openUri(config.db);
 
@@ -15,8 +17,10 @@ models.forEach(function (model) {
   require(model);
 });
 var app = express();
+app.use(cors());
 
 require('./config/express')(app, config);
+
 
 app.listen(config.port, function () {
   console.log('Express server listening on port ' + config.port);

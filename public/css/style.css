@@ -1,0 +1,21 @@
+html {	height: 100%;
+	margin-bottom: 60px;
+}
+
+nav.teal, footer.teal {
+	background-color: rgba(125, 140, 49, 0.65)!important;
+}
+
+.find_button {
+	float: right;
+	margin: 10px;
+}
+
+h5 {
+	text-align: center;
+	display: block;
+}
+
+footer.teal {
+	min-height: 60px;
+}
